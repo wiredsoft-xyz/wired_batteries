@@ -1,0 +1,25 @@
+---A collection of helpful code to get your project off the ground faster
+---@class Batteries
+---@field class Class
+---@field assert Assert
+---@field mathx MathX
+---@field tablex TableX
+---@field stringx StringX
+---@field sort Sort
+---@field functional Functional
+---@field sequence Sequence
+---@field set Set
+---@field vec2 Vec2
+---@field vec3 Vec3
+---@field intersect Intersect
+---@field timer Timer
+---@field pubsub PubSub
+---@field state_machine StateMachine
+---@field async Async
+---@field manual_gc ManualGC
+---@field colour Colour
+---@field pretty Pretty
+---@field measure Measure
+---@field make_pooled MakePooled
+---@field pathfind PathFind
+---@field export fun(self): Batteries

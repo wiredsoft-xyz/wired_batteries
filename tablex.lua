@@ -3,71 +3,100 @@
 ]]
 
 local path = (...):gsub("tablex", "")
+---@type Assert
 local assert = require(path .. "assert")
 
---for spairs
---(can be replaced with eg table.sort to use that instead)
+---for spairs
+---(can be replaced with eg table.sort to use that instead)
+---@type Sort
 local sort = require(path .. "sort")
 local spairs_sort = sort.stable_sort
 
---apply prototype to module if it isn't the global table
---so it works "as if" it was the global table api
---upgraded with these routines
+---@class TableX
 local tablex = setmetatable({}, {
-	__index = table,
+	--apply prototype to module if it isn't the global table
+	--so it works "as if" it was the global table api
+	--upgraded with these routines
+	__index = table --[[@as TableX]],
 })
 
 --alias
-tablex.join = tablex.concat
+tablex.join = table.concat
 
---return the front element of a table
+---return the front element of a table
+---@generic T
+---@param t table<T>
+---@return T
 function tablex.front(t)
 	return t[1]
 end
 
---return the back element of a table
+---return the back element of a table
+---@generic T
+---@param t table
+---@return T
 function tablex.back(t)
 	return t[#t]
 end
 
---remove the back element of a table and return it
+---remove the back element of a table and return it
+---@generic T
+---@param t table
+---@return T
 function tablex.pop(t)
 	return table.remove(t)
 end
 
---insert to the back of a table, returning the table for possible chaining
+---insert to the back of a table, returning the table for possible chaining
+---@generic T : table
+---@param t T
+---@param v any
+---@return T
 function tablex.push(t, v)
 	table.insert(t, v)
 	return t
 end
 
---remove the front element of a table and return it
+---remove the front element of a table and return it
+---@generic T : table
+---@param t T
+---@return T
 function tablex.shift(t)
 	return table.remove(t, 1)
 end
 
---insert to the front of a table, returning the table for possible chaining
+---insert to the front of a table, returning the table for possible chaining
+---@generic T : table
+---@param t T
+---@return T
 function tablex.unshift(t, v)
 	table.insert(t, 1, v)
 	return t
 end
 
---swap two indices of a table
---(easier to read and generally less typing than the common idiom)
+---swap two indices of a table
+---(easier to read and generally less typing than the common idiom)
+---@param t table
+---@param i number
+---@param j number
 function tablex.swap(t, i, j)
 	t[i], t[j] = t[j], t[i]
 end
 
---swap the element at i to the back of the table, and remove it
---avoids linear cost of removal at the expense of messing with the order of the table
+---swap the element at i to the back of the table, and remove it
+---avoids linear cost of removal at the expense of messing with the order of the table
+---@param t table
+---@param i number
 function tablex.swap_and_pop(t, i)
 	tablex.swap(t, i, #t)
 	return tablex.pop(t)
 end
 
---rotate the elements of a table t by amount slots
--- amount 1: {1, 2, 3, 4} -> {2, 3, 4, 1}
--- amount -1: {1, 2, 3, 4} -> {4, 1, 2, 3}
+---rotate the elements of a table t by amount slots
+---amount 1: {1, 2, 3, 4} -> {2, 3, 4, 1}
+---amount -1: {1, 2, 3, 4} -> {4, 1, 2, 3}
+---@param t table
+---@param amount number
 function tablex.rotate(t, amount)
 	if #t > 1 then
 		while amount >= 1 do
@@ -85,9 +114,11 @@ end
 --default comparison from sort.lua
 local default_less = sort.default_less
 
---check if a function is sorted based on a "less" or "comes before" ordering comparison
---if any item is "less" than the item before it, we are not sorted
---(use stable_sort to )
+---check if a function is sorted based on a "less" or "comes before" ordering comparison
+---if any item is "less" than the item before it, we are not sorted
+---(use stable_sort to )
+---@param t table
+---@param less nil|fun(v1: any, v2: any): boolean
 function tablex.is_sorted(t, less)
 	less = less or default_less
 	for i = 1, #t - 1 do
@@ -98,11 +129,14 @@ function tablex.is_sorted(t, less)
 	return true
 end
 
---insert to the first position before the first larger element in the table
--- ({1, 2, 2, 3}, 2) -> {1, 2, 2, 2 (inserted here), 3}
---if this is used on an already sorted table, the table will remain sorted and not need re-sorting
---(you can sort beforehand if you don't know)
---return the table for possible chaining
+---insert to the first position before the first larger element in the table
+---({1, 2, 2, 3}, 2) -> {1, 2, 2, 2 (inserted here), 3}
+---if this is used on an already sorted table, the table will remain sorted and not need re-sorting
+---(you can sort beforehand if you don't know)
+---return the table for possible chaining
+---@param t table
+---@param v any
+---@param less nil|fun(v1: any, v2: any): boolean
 function tablex.insert_sorted(t, v, less)
 	less = less or default_less
 	local low = 1
@@ -120,8 +154,10 @@ function tablex.insert_sorted(t, v, less)
 	return t
 end
 
---find the index in a sequential table that a resides at
---or nil if nothing was found
+---find the index in a sequential table that a resides at
+---or nil if nothing was found
+---@param t table
+---@param a any
 function tablex.index_of(t, a)
 	if a == nil then return nil end
 	for i, b in ipairs(t) do
@@ -132,8 +168,10 @@ function tablex.index_of(t, a)
 	return nil
 end
 
---find the key in a keyed table that a resides at
---or nil if nothing was found
+---find the key in a keyed table that a resides at
+---or nil if nothing was found
+---@param t table
+---@param a any
 function tablex.key_of(t, a)
 	if a == nil then return nil end
 	for k, v in pairs(t) do
@@ -144,8 +182,10 @@ function tablex.key_of(t, a)
 	return nil
 end
 
---remove the first instance of value from a table (linear search)
---returns true if the value was removed, else false
+---remove the first instance of value from a table (linear search)
+---returns true if the value was removed, else false
+---@param t table
+---@param a any
 function tablex.remove_value(t, a)
 	local i = tablex.index_of(t, a)
 	if i then
@@ -155,8 +195,10 @@ function tablex.remove_value(t, a)
 	return false
 end
 
---add a value to a table if it doesn't already exist (linear search)
---returns true if the value was added, else false
+---add a value to a table if it doesn't already exist (linear search)
+---returns true if the value was added, else false
+---@param t table
+---@param a any
 function tablex.add_value(t, a)
 	local i = tablex.index_of(t, a)
 	if not i then
@@ -166,11 +208,13 @@ function tablex.add_value(t, a)
 	return false
 end
 
---get the next element in a sequential table
---	wraps around such that the next element to the last in sequence is the first
---	exists because builtin next may not behave as expected for mixed array/hash tables
---	if the element passed is not present or is nil, will also get the first element
---		but this should not be used to iterate the whole table; just use ipairs for that
+---get the next element in a sequential table
+---wraps around such that the next element to the last in sequence is the first
+---exists because builtin next may not behave as expected for mixed array/hash tables
+---if the element passed is not present or is nil, will also get the first element
+---but this should not be used to iterate the whole table; just use ipairs for that
+---@param t table
+---@param v any
 function tablex.next_element(t, v)
 	local i = tablex.index_of(t, v)
 	--not present? just get the front of the table
@@ -182,6 +226,8 @@ function tablex.next_element(t, v)
 	return t[i]
 end
 
+---@param t table
+---@param v any
 function tablex.previous_element(t, v)
 	local i = tablex.index_of(t, v)
 	--not present? just get the front of the table
@@ -209,7 +255,9 @@ local function _random(min, max, r)
 		or _global_random(min, max)
 end
 
---pick a random value from a table (or nil if it's empty)
+---pick a random index from a table (or nil if it's empty)
+---@param t table
+---@param r table?
 function tablex.random_index(t, r)
 	if #t == 0 then
 		return 0
@@ -217,7 +265,9 @@ function tablex.random_index(t, r)
 	return _random(1, #t, r)
 end
 
---pick a random value from a table (or nil if it's empty)
+---pick a random value from a table (or nil if it's empty)
+---@param t table
+---@param r table?
 function tablex.pick_random(t, r)
 	if #t == 0 then
 		return nil
@@ -225,7 +275,9 @@ function tablex.pick_random(t, r)
 	return t[tablex.random_index(t, r)]
 end
 
---take a random value from a table (or nil if it's empty)
+---take a random value from a table (or nil if it's empty)
+---@param t table
+---@param r table?
 function tablex.take_random(t, r)
 	if #t == 0 then
 		return nil
@@ -233,10 +285,13 @@ function tablex.take_random(t, r)
 	return table.remove(t, tablex.random_index(t, r))
 end
 
---return a random value from table t based on weights w provided (or nil empty)
---	w should be the same length as t
--- todo:
---	provide normalisation outside of this function, require normalised weights
+---return a random value from table t based on weights w provided (or nil empty)
+---w should be the same length as t
+---todo:
+---provide normalisation outside of this function, require normalised weights
+---@param t table
+---@param w table<number>
+---@param r table?
 function tablex.pick_weighted_random(t, w, r)
 	if #t == 0 then
 		return nil
@@ -260,7 +315,9 @@ function tablex.pick_weighted_random(t, w, r)
 	return tablex.back(t)
 end
 
---shuffle the order of a table
+---shuffle the order of a table
+---@param t table
+---@param r table?
 function tablex.shuffle(t, r)
 	for i = 1, #t do
 		local j = _random(i, #t, r)
@@ -269,7 +326,8 @@ function tablex.shuffle(t, r)
 	return t
 end
 
---reverse the order of a table
+---reverse the order of a table
+---@param t table
 function tablex.reverse(t)
 	for i = 1, #t / 2 do
 		local j = #t - i + 1
@@ -278,7 +336,9 @@ function tablex.reverse(t)
 	return t
 end
 
---trim a table to a certain maximum length
+---trim a table to a certain maximum length
+---@param t table
+---@param l number
 function tablex.trim(t, l)
 	while #t > l do
 		table.remove(t)
@@ -286,9 +346,10 @@ function tablex.trim(t, l)
 	return t
 end
 
---collect all keys of a table into a sequential table
---(useful if you need to iterate non-changing keys often and want an nyi tradeoff;
---	this call will be slow but then following iterations can use ipairs)
+---collect all keys of a table into a sequential table
+---(useful if you need to iterate non-changing keys often and want an nyi tradeoff;
+---this call will be slow but then following iterations can use ipairs)
+---@param t table
 function tablex.keys(t)
 	local r = {}
 	for k, v in pairs(t) do
@@ -297,8 +358,9 @@ function tablex.keys(t)
 	return r
 end
 
---collect all values of a keyed table into a sequential table
---(shallow copy if it's already sequential)
+---collect all values of a keyed table into a sequential table
+---(shallow copy if it's already sequential)
+---@param t table
 function tablex.values(t)
 	local r = {}
 	for k, v in pairs(t) do
@@ -307,10 +369,12 @@ function tablex.values(t)
 	return r
 end
 
---collect all values over a range into a new sequential table
---useful where a range may have been modified to contain nils
---	range can be a number, where it is used as a numeric limit (ie [1-range])
---	range can be a table, where the sequential values are used as keys
+---collect all values over a range into a new sequential table
+---useful where a range may have been modified to contain nils
+---range can be a number, where it is used as a numeric limit (ie [1-range])
+---range can be a table, where the sequential values are used as keys
+---@param t table
+---@param range number|table<number>
 function tablex.compact(t, range)
 	local r = {}
 	if type(range) == "table" then
@@ -331,10 +395,11 @@ function tablex.compact(t, range)
 		error("tablex.compact - range must be a number or table", 2)
 	end
 	return r
-
 end
 
---append sequence t2 into t1, modifying t1
+---append sequence t2 into t1, modifying t1
+---@param t1 table
+---@param t2 table
 function tablex.append_inplace(t1, t2, ...)
 	for i, v in ipairs(t2) do
 		table.insert(t1, v)
@@ -345,13 +410,16 @@ function tablex.append_inplace(t1, t2, ...)
 	return t1
 end
 
---return a new sequence with the elements of both t1 and t2
+---return a new sequence with the elements of both t1 and t2
+---@param t1 table
+---@param ... any
 function tablex.append(t1, ...)
 	local r = {}
 	tablex.append_inplace(r, t1, ...)
 	return r
 end
 
+---TODOMATT
 --return a copy of a sequence with all duplicates removed
 --	causes a little "extra" gc churn of one table to track the duplicates internally
 function tablex.dedupe(t)
@@ -629,6 +697,5 @@ function tablex.spairs(t, less)
 		end
 	end
 end
-
 
 return tablex

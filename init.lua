@@ -1,62 +1,58 @@
---[[
-	batteries for lua
-
-	a collection of helpful code to get your project off the ground faster
-]]
-
 local path = ...
 local function require_relative(p)
-	return require(table.concat({path, p}, "."))
+	return require(table.concat({ path, p }, "."))
 end
 
---build the module
 local _batteries = {
-	--
+	---@type Class
 	class = require_relative("class"),
-	--
+	---@type Assert
 	assert = require_relative("assert"),
-	--extension libraries
+	---@type MathX
 	mathx = require_relative("mathx"),
+	---@type TableX
 	tablex = require_relative("tablex"),
+	---@type StringX
 	stringx = require_relative("stringx"),
-	--sorting routines
+	---@type Sort
 	sort = require_relative("sort"),
-	--
+	---@type Functional
 	functional = require_relative("functional"),
-	--collections
+	---@type Sequence
 	sequence = require_relative("sequence"),
+	---@type Set
 	set = require_relative("set"),
-	--geom
+	---@type Vec2
 	vec2 = require_relative("vec2"),
+	---@type Vec3
 	vec3 = require_relative("vec3"),
+	---@type Intersect
 	intersect = require_relative("intersect"),
-	--
+	---@type Timer
 	timer = require_relative("timer"),
+	---@type PubSub
 	pubsub = require_relative("pubsub"),
+	---@type StateMachine
 	state_machine = require_relative("state_machine"),
+	---@type Async
 	async = require_relative("async"),
+	---@type ManualGC
 	manual_gc = require_relative("manual_gc"),
+	---@type Colour
 	colour = require_relative("colour"),
+	---@type Pretty
 	pretty = require_relative("pretty"),
+	---@type Measure
 	measure = require_relative("measure"),
+	---@type MakePooled
 	make_pooled = require_relative("make_pooled"),
+	---@type PathFind
 	pathfind = require_relative("pathfind"),
 }
 
---assign aliases
-for _, alias in ipairs({
-	{"mathx", "math"},
-	{"tablex", "table"},
-	{"stringx", "string"},
-	{"sort", "stable_sort"},
-	{"colour", "color"},
-}) do
-	_batteries[alias[2]] = _batteries[alias[1]]
-end
-
---easy export globally if required
+---Make batteries globally available.
+---@return Batteries
 function _batteries:export()
-	--export all key strings globally, if doesn't already exist
 	for k, v in pairs(self) do
 		if _G[k] == nil then
 			_G[k] = v
@@ -79,76 +75,13 @@ function _batteries:export()
 	assert = self.assert
 
 	--like ipairs, but in reverse
-	ripairs = self.tablex.ripairs
+	_G.ripairs = self.tablex.ripairs
 
 	--export the whole library to global `batteries`
-	batteries = self
+	_G.batteries = self
 
 	return self
 end
 
-
---convert naming, for picky eaters
---experimental, let me know how it goes
-function _batteries:camelCase()
-	--not part of stringx for now, because it's not necessarily utf8 safe
-	local function capitalise(s)
-		local head = s:sub(1,1)
-		local tail = s:sub(2)
-		return head:upper() .. tail
-	end
-
-	--any acronyms to fully capitalise to avoid "Rgb" and the like
-	local acronyms = _batteries.set{"rgb", "rgba", "argb", "hsl", "xy", "gc", "aabb",}
-	local function caps_acronym(s)
-		if acronyms:has(s) then
-			s = s:upper()
-		end
-		return s
-	end
-
-	--convert something_like_this to somethingLikeThis
-	local function snake_to_camel(s)
-		local chunks = _batteries.sequence(_batteries.stringx.split(s, "_"))
-		chunks:remap(caps_acronym)
-		local first = chunks:shift()
-		chunks:remap(capitalise)
-		chunks:unshift(first)
-		return chunks:concat("")
-	end
-	--convert all named properties
-	--(keep the old ones around as well)
-	--(we take a copy of the keys here cause we're going to be inserting new keys as we go)
-	for _, k in ipairs(_batteries.tablex.keys(self)) do
-		local v = self[k]
-		if
-			--only convert string properties
-			type(k) == "string"
-			--ignore private and metamethod properties
-			and not _batteries.stringx.starts_with(k, "_")
-		then
-			--convert
-			local camel = snake_to_camel(k)
-			if type(v) == "table" then
-				--capitalise classes
-				if v.__index == v then
-					camel = capitalise(camel)
-					--modify the internal name for :type()
-					--might be a problem for serialisation etc,
-					--but i imagine converting to/from camelCase mid-project is rare
-					v.__name = camel
-				end
-				--recursively convert anything nested as well
-				_batteries.camelCase(v)
-			end
-			--assign if the key changed and there isn't a matching key
-			if k ~= camel and self[camel] == nil then
-				self[camel] = v
-			end
-		end
-	end
-
-	return self
-end
-
+---@type Batteries
 return _batteries

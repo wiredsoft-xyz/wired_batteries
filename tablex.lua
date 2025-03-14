@@ -12,7 +12,7 @@ local assert = require(path .. "assert")
 local sort = require(path .. "sort")
 local spairs_sort = sort.stable_sort
 
----@class TableX
+---@class TableX: table
 local tablex = setmetatable({}, {
 	--apply prototype to module if it isn't the global table
 	--so it works "as if" it was the global table api
@@ -22,6 +22,7 @@ local tablex = setmetatable({}, {
 
 --alias
 tablex.join = table.concat
+tablex.insert = table.insert
 
 ---return the front element of a table
 ---@generic T
@@ -419,9 +420,10 @@ function tablex.append(t1, ...)
 	return r
 end
 
----TODOMATT
---return a copy of a sequence with all duplicates removed
---	causes a little "extra" gc churn of one table to track the duplicates internally
+---return a copy of a sequence with all duplicates removed
+---causes a little "extra" gc churn of one table to track the duplicates internally
+---@param t table
+---@return table
 function tablex.dedupe(t)
 	local seen = {}
 	local r = {}
@@ -440,9 +442,10 @@ if not tablex.clear then
 	--pull in from luajit if possible
 	imported, tablex.clear = pcall(require, "table.clear")
 	if not imported then
-		--remove all values from a table
-		--useful when multiple references are being held
-		--so you cannot just create a new table
+		---remove all values from a table
+		---useful when multiple references are being held
+		---so you cannot just create a new table
+		---@param t table
 		function tablex.clear(t)
 			assert:type(t, "table", "tablex.clear - t", 1)
 			local k = next(t)
@@ -454,8 +457,9 @@ if not tablex.clear then
 	end
 end
 
--- Copy a table
---	See shallow_overlay to shallow copy into an existing table to avoid garbage.
+---Copy a table
+---See shallow_overlay to shallow copy into an existing table to avoid garbage.
+---@param t table
 function tablex.shallow_copy(t)
 	assert:type(t, "table", "tablex.shallow_copy - t", 1)
 	local into = {}
@@ -468,8 +472,8 @@ end
 --alias
 tablex.copy = tablex.shallow_copy
 
---implementation for deep copy
---traces stuff that has already been copied, to handle circular references
+---implementation for deep copy
+---traces stuff that has already been copied, to handle circular references
 local function _deep_copy_impl(t, already_copied)
 	local clone = t
 	if type(t) == "table" then
@@ -493,18 +497,20 @@ local function _deep_copy_impl(t, already_copied)
 	return clone
 end
 
--- Recursively copy values of a table.
--- Retains the same keys as original table -- they're not cloned.
+---Recursively copy values of a table.
+---Retains the same keys as original table -- they're not cloned.
+---@param t table
 function tablex.deep_copy(t)
 	assert:type(t, "table", "tablex.deep_copy - t", 1)
 	return _deep_copy_impl(t, {})
 end
 
--- Overlay tables directly onto one another, merging them together.
--- Doesn't merge tables within.
--- Takes as many tables as required,
--- overlays them in passed order onto the first,
--- and returns the first table.
+---Overlay tables directly onto one another, merging them together.
+---Doesn't merge tables within.
+---Takes as many tables as required,
+---overlays them in passed order onto the first,
+---and returns the first table.
+---@param dest table
 function tablex.shallow_overlay(dest, ...)
 	assert:type(dest, "table", "tablex.shallow_overlay - dest", 1)
 	for i = 1, select("#", ...) do
@@ -519,11 +525,12 @@ end
 
 tablex.overlay = tablex.shallow_overlay
 
--- Overlay tables directly onto one another, merging them together into something like a union.
--- Also overlays nested tables, but doesn't clone them (so a nested table may be added to dest).
--- Takes as many tables as required,
--- overlays them in passed order onto the first,
--- and returns the first table.
+---Overlay tables directly onto one another, merging them together into something like a union.
+---Also overlays nested tables, but doesn't clone them (so a nested table may be added to dest).
+---Takes as many tables as required,
+---overlays them in passed order onto the first,
+---and returns the first table.
+---@param dest table
 function tablex.deep_overlay(dest, ...)
 	assert:type(dest, "table", "tablex.deep_overlay - dest", 1)
 	for i = 1, select("#", ...) do
@@ -540,14 +547,15 @@ function tablex.deep_overlay(dest, ...)
 	return dest
 end
 
---collapse the first level of a table into a new table of reduced dimensionality
---will collapse {{1, 2}, 3, {4, 5, 6}} into {1, 2, 3, 4, 5, 6}
---useful when collating multiple result sets, or when you got 2d data when you wanted 1d data.
---in the former case you may just want to append_inplace though :)
---note that non-tabular elements in the base level are preserved,
---	but _all_ tables are collapsed; this includes any table-based types (eg a batteries.vec2),
---	so they can't exist in the base level
---	(... or at least, their non-ipairs members won't survive the collapse)
+---collapse the first level of a table into a new table of reduced dimensionality
+---will collapse {{1, 2}, 3, {4, 5, 6}} into {1, 2, 3, 4, 5, 6}
+---useful when collating multiple result sets, or when you got 2d data when you wanted 1d data.
+---in the former case you may just want to append_inplace though :)
+---note that non-tabular elements in the base level are preserved,
+---but _all_ tables are collapsed; this includes any table-based types (eg a batteries.vec2),
+---so they can't exist in the base level
+---(... or at least, their non-ipairs members won't survive the collapse)
+---@param t table
 function tablex.collapse(t)
 	assert:type(t, "table", "tablex.collapse - t", 1)
 	local r = {}
@@ -563,11 +571,13 @@ function tablex.collapse(t)
 	return r
 end
 
---extract values of a table into nested tables of a set length
---	extract({1, 2, 3, 4}, 2) -> {{1, 2}, {3, 4}}
---	useful for working with "inlined" data in a more structured way
---	can use collapse (or functional.stitch) to reverse the process once you're done if needed
---	todo: support an ordered list of keys passed and extract them to names
+---extract values of a table into nested tables of a set length
+---extract({1, 2, 3, 4}, 2) -> {{1, 2}, {3, 4}}
+---useful for working with "inlined" data in a more structured way
+---can use collapse (or functional.stitch) to reverse the process once you're done if needed
+---todo: support an ordered list of keys passed and extract them to names
+---@param t table
+---@param n number
 function tablex.extract(t, n)
 	assert:type(t, "table", "tablex.extract - t", 1)
 	assert:type(n, "number", "tablex.extract - n", 1)
@@ -581,8 +591,10 @@ function tablex.extract(t, n)
 	return r
 end
 
---check if two tables have equal contents at the first level
---slow, as it needs two loops
+---check if two tables have equal contents at the first level
+---slow, as it needs two loops
+---@param a table
+---@param b table
 function tablex.shallow_equal(a, b)
 	if a == b then return true end
 	for k, v in pairs(a) do
@@ -600,8 +612,10 @@ function tablex.shallow_equal(a, b)
 	return true
 end
 
---check if two tables have equal contents all the way down
---slow, as it needs two potentially recursive loops
+---check if two tables have equal contents all the way down
+---slow, as it needs two potentially recursive loops
+---@param a table
+---@param b table
 function tablex.deep_equal(a, b)
 	if a == b then return true end
 	--not equal on type
@@ -630,40 +644,48 @@ end
 --alias
 tablex.flatten = tablex.collapse
 
---faster unpacking for known-length tables up to 8
---gets around nyi in luajit
---note: you can use a larger unpack than you need as the rest
---		can be discarded, but it "feels dirty" :)
-
+---faster unpacking for known-length tables up to 8
+---gets around nyi in luajit
+---note: you can use a larger unpack than you need as the rest
+---can be discarded, but it "feels dirty" :)
+---@param t table
 function tablex.unpack2(t)
 	return t[1], t[2]
 end
 
+---@param t table
 function tablex.unpack3(t)
 	return t[1], t[2], t[3]
 end
 
+---@param t table
 function tablex.unpack4(t)
 	return t[1], t[2], t[3], t[4]
 end
 
+---@param t table
 function tablex.unpack5(t)
 	return t[1], t[2], t[3], t[4], t[5]
 end
 
+---@param t table
 function tablex.unpack6(t)
 	return t[1], t[2], t[3], t[4], t[5], t[6]
 end
 
+---@param t table
 function tablex.unpack7(t)
 	return t[1], t[2], t[3], t[4], t[5], t[6], t[7]
 end
 
+---@param t table
 function tablex.unpack8(t)
 	return t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8]
 end
 
---internal: reverse iterator function
+---internal: reverse iterator function
+---@param t table
+---@param i number
 local function _ripairs_iter(t, i)
 	i = i - 1
 	local v = t[i]
@@ -672,16 +694,19 @@ local function _ripairs_iter(t, i)
 	end
 end
 
---iterator that works like ipairs, but in reverse order, with indices from #t to 1
---similar to ipairs, it will only consider sequential until the first nil value in the table.
+---iterator that works like ipairs, but in reverse order, with indices from #t to 1
+---similar to ipairs, it will only consider sequential until the first nil value in the table.
+---@param t table
 function tablex.ripairs(t)
 	return _ripairs_iter, t, #t + 1
 end
 
---works like pairs, but returns sorted table
---	generates a fair bit of garbage but very nice for more stable output
---	less function gets keys the of the table as its argument; if you want to sort on the values they map to then
---		you'll likely need a closure
+---works like pairs, but returns sorted table
+---generates a fair bit of garbage but very nice for more stable output
+---less function gets keys the of the table as its argument; if you want to sort on the values they map to then
+---you'll likely need a closure
+---@param t table
+---@param less nil|fun(v1: any, v2:any): boolean
 function tablex.spairs(t, less)
 	less = less or default_less
 	--gather the keys

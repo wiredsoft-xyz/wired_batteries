@@ -1,19 +1,20 @@
-local _assert = assert
-
-
---[[ #
-	> various intuitive assertions that
+--[[
+	various intuitive assertions that
 		- avoid garbage generation upon success,
 		- build nice formatted error messages
 		- post one level above the call site by default
 		- return their first argument so they can be used inline
 
-	> default call is builtin global assert
-	> can call nop() to dummy out everything for "release mode"
+	default call is builtin global assert
+
+	can call nop() to dummy out everything for "release mode"
+	(if you're worried about that sort of thing)
 ]]
----@class Assert
+
+local _assert = assert
+
+--proxy calls to global assert
 local assert = setmetatable({}, {
-	---proxy calls to global assert
 	__call = function(self, ...)
 		return _assert(...)
 	end,
@@ -26,13 +27,8 @@ local function _extra(msg)
 	return "\n\n\t(note: " .. msg .. ")"
 end
 
----assert a value is not nil
----return the value, so this can be chained
----@generic T
----@param v T?
----@param msg string?
----@param stack_level number?
----@return T
+--assert a value is not nil
+--return the value, so this can be chained
 function assert:some(v, msg, stack_level)
 	if v == nil then
 		error(("assertion failed: value is nil %s"):format(
@@ -42,13 +38,7 @@ function assert:some(v, msg, stack_level)
 	return v
 end
 
----assert two values are equal
----@generic T
----@param a T?
----@param b any?
----@param msg string?
----@param stack_level number?
----@return T
+--assert two values are equal
 function assert:equal(a, b, msg, stack_level)
 	if a ~= b then
 		error(("assertion failed: %s is not equal to %s %s"):format(
@@ -60,13 +50,7 @@ function assert:equal(a, b, msg, stack_level)
 	return a
 end
 
----assert two values are not equal
----@generic T
----@param a T?
----@param b any?
----@param msg string?
----@param stack_level number?
----@return T
+--assert two values are not equal
 function assert:not_equal(a, b, msg, stack_level)
 	if a == b then
 		error(("assertion failed: values are equal %s"):format(
@@ -76,13 +60,7 @@ function assert:not_equal(a, b, msg, stack_level)
 	return a
 end
 
----assert a value is of a certain type
----@generic T
----@param a any?
----@param t T?
----@param msg string?
----@param stack_level number?
----@return T
+--assert a value is of a certain type
 function assert:type(a, t, msg, stack_level)
 	if type(a) ~= t then
 		error(("assertion failed: %s (%s) not of type %s %s"):format(
@@ -95,14 +73,8 @@ function assert:type(a, t, msg, stack_level)
 	return a
 end
 
----assert a value is nil or a certain type.
----useful for optional parameters.
----@generic T
----@param a any?
----@param t T?
----@param msg string?
----@param stack_level number?
----@return T|nil
+--assert a value is nil or a certain type.
+-- useful for optional parameters.
 function assert:type_or_nil(a, t, msg, stack_level)
 	if a ~= nil then
 		assert:type(a, t, msg, stack_level + 1)
@@ -110,13 +82,7 @@ function assert:type_or_nil(a, t, msg, stack_level)
 	return a
 end
 
----assert a value is one of those in a table of options
----@generic T
----@param a T?
----@param t table
----@param msg string?
----@param stack_level number?
----@return T
+--assert a value is one of those in a table of options
 function assert:one_of(a, t, msg, stack_level)
 	for _, value in ipairs(t) do
 		if value == a then

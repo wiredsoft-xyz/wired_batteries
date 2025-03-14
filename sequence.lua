@@ -6,13 +6,11 @@
 ]]
 
 local path = (...):gsub("sequence", "")
----@type TableX
 local table = require(path .. "tablex") --shadow global table module
 local functional = require(path .. "functional")
 local stable_sort = require(path .. "sort").stable_sort
 
 --(not a class, because we want to be able to upgrade tables that are passed in without a copy)
----@class Sequence
 local sequence = {}
 sequence.__index = sequence
 setmetatable(sequence, {
@@ -28,8 +26,7 @@ setmetatable(sequence, {
 sequence.ipairs = ipairs
 sequence.iterate = ipairs
 
----upgrade a table into a sequence, or create a new sequence
----@param t table
+--upgrade a table into a sequence, or create a new sequence
 function sequence:new(t)
 	return setmetatable(t or {}, sequence)
 end
@@ -61,7 +58,7 @@ end
 
 --aliases
 for _, v in ipairs({
-	{ "flatten", "collapse" },
+	{"flatten", "collapse"},
 }) do
 	sequence[v[1]] = sequence[v[2]]
 end
@@ -117,22 +114,20 @@ end
 
 --aliases
 for _, v in ipairs({
-	{ "remap",      "map_inplace" },
-	{ "map_stitch", "stitch" },
-	{ "map_cycle",  "cycle" },
-	{ "find_best",  "find_max" },
+	{"remap", "map_inplace"},
+	{"map_stitch", "stitch"},
+	{"map_cycle", "cycle"},
+	{"find_best", "find_max"},
 }) do
 	sequence[v[1]] = sequence[v[2]]
 end
 
----(anything that needs bespoke wrapping)
----@param f table
+--(anything that needs bespoke wrapping)
 function sequence:partition(f)
 	local a, b = functional.partition(self, f)
 	return sequence(a), sequence(b)
 end
 
----@param f table
 function sequence:unzip(f)
 	local a, b = functional.unzip(self, f)
 	return sequence(a), sequence(b)

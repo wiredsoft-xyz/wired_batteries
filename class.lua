@@ -47,9 +47,7 @@ local function next_class_id()
 	return class_id_gen
 end
 
----implement an interface into c
----@param c _Class
----@param interface table<string, function>
+--implement an interface into c
 local function implement(c, interface)
 	c.__is[interface] = true
 	for k, v in pairs(interface) do
@@ -59,16 +57,8 @@ local function implement(c, interface)
 	end
 end
 
----@class ClassConfig
----@field extends Class?
----@field implements table<Class>?
----@field name string?
----@field default_tostring nil|fun(): string
-
----build a new class
----@param config ClassConfig
----@return Class
-local function Class(config)
+--build a new class
+local function class(config)
 	local class_id = next_class_id()
 
 	config = config or {}
@@ -86,10 +76,9 @@ local function Class(config)
 		src_location
 	)
 
-	---@class _Class
 	local c = {}
 
-	---prototype
+	--prototype
 	c.__index = c
 
 	--unique generated id per-class
@@ -122,11 +111,8 @@ local function Class(config)
 	--checking class membership for probably-too-dynamic code
 	--returns true for both extended classes and implemented interfaces
 	--(implemented with a hashset for fast lookups)
-	---@type table<Class, boolean>
 	c.__is = {}
 	c.__is[c] = true
-	---@param t Class
-	---@return boolean
 	function c:is(t)
 		return self.__is[t] == true
 	end
@@ -139,16 +125,17 @@ local function Class(config)
 	--for any nested super calls, it'll call the relevant one in the
 	--heirarchy, assuming no super calls have been missed
 	function c:super(...)
+		if not c.__super then return end
 		--hold reference so we can restore
 		local current_super = c.__super
-		if not current_super then return end
 		--push next super
-		c.__super = current_super.__super
+		c.__super = c.__super.__super
 		--call
 		current_super.new(self, ...)
 		--restore
 		c.__super = current_super
 	end
+
 
 	if c.__super then
 		--implement superclass interface
@@ -171,14 +158,8 @@ local function Class(config)
 		self:super(...)
 	end
 
-	---@class Class : _Class
-	---@field private __super any
-	---@field private __is any
-	---@field private __index any
-	---@field private __id any
-	---@field private __type any
-	---@field private __tostring any
+	--done
 	return c
 end
 
-return Class
+return class

@@ -3,100 +3,71 @@
 ]]
 
 local path = (...):gsub("tablex", "")
----@type Assert
 local assert = require(path .. "assert")
 
----for spairs
----(can be replaced with eg table.sort to use that instead)
----@type Sort
+--for spairs
+--(can be replaced with eg table.sort to use that instead)
 local sort = require(path .. "sort")
 local spairs_sort = sort.stable_sort
 
----@class TableX: tablelib
+--apply prototype to module if it isn't the global table
+--so it works "as if" it was the global table api
+--upgraded with these routines
 local tablex = setmetatable({}, {
-	--apply prototype to module if it isn't the global table
-	--so it works "as if" it was the global table api
-	--upgraded with these routines
-	__index = table --[[@as TableX]],
+	__index = table,
 })
 
 --alias
-tablex.join = table.concat
+tablex.join = tablex.concat
 
----return the front element of a table
----@generic T
----@param t table<T>
----@return T
+--return the front element of a table
 function tablex.front(t)
 	return t[1]
 end
 
----return the back element of a table
----@generic T
----@param t table
----@return T
+--return the back element of a table
 function tablex.back(t)
 	return t[#t]
 end
 
----remove the back element of a table and return it
----@generic T
----@param t table
----@return T
+--remove the back element of a table and return it
 function tablex.pop(t)
 	return table.remove(t)
 end
 
----insert to the back of a table, returning the table for possible chaining
----@generic T : table
----@param t T
----@param v any
----@return T
+--insert to the back of a table, returning the table for possible chaining
 function tablex.push(t, v)
 	table.insert(t, v)
 	return t
 end
 
----remove the front element of a table and return it
----@generic T : table
----@param t T
----@return T
+--remove the front element of a table and return it
 function tablex.shift(t)
 	return table.remove(t, 1)
 end
 
----insert to the front of a table, returning the table for possible chaining
----@generic T : table
----@param t T
----@return T
+--insert to the front of a table, returning the table for possible chaining
 function tablex.unshift(t, v)
 	table.insert(t, 1, v)
 	return t
 end
 
----swap two indices of a table
----(easier to read and generally less typing than the common idiom)
----@param t table
----@param i number
----@param j number
+--swap two indices of a table
+--(easier to read and generally less typing than the common idiom)
 function tablex.swap(t, i, j)
 	t[i], t[j] = t[j], t[i]
 end
 
----swap the element at i to the back of the table, and remove it
----avoids linear cost of removal at the expense of messing with the order of the table
----@param t table
----@param i number
+--swap the element at i to the back of the table, and remove it
+--avoids linear cost of removal at the expense of messing with the order of the table
 function tablex.swap_and_pop(t, i)
 	tablex.swap(t, i, #t)
 	return tablex.pop(t)
 end
 
----rotate the elements of a table t by amount slots
----amount 1: {1, 2, 3, 4} -> {2, 3, 4, 1}
----amount -1: {1, 2, 3, 4} -> {4, 1, 2, 3}
----@param t table
----@param amount number
+--rotate the elements of a table t by amount slots
+-- amount 1: {1, 2, 3, 4} -> {2, 3, 4, 1}
+-- amount -1: {1, 2, 3, 4} -> {4, 1, 2, 3}
 function tablex.rotate(t, amount)
 	if #t > 1 then
 		while amount >= 1 do
@@ -114,11 +85,9 @@ end
 --default comparison from sort.lua
 local default_less = sort.default_less
 
----check if a function is sorted based on a "less" or "comes before" ordering comparison
----if any item is "less" than the item before it, we are not sorted
----(use stable_sort to )
----@param t table
----@param less nil|fun(v1: any, v2: any): boolean
+--check if a function is sorted based on a "less" or "comes before" ordering comparison
+--if any item is "less" than the item before it, we are not sorted
+--(use stable_sort to )
 function tablex.is_sorted(t, less)
 	less = less or default_less
 	for i = 1, #t - 1 do
@@ -129,14 +98,11 @@ function tablex.is_sorted(t, less)
 	return true
 end
 
----insert to the first position before the first larger element in the table
----({1, 2, 2, 3}, 2) -> {1, 2, 2, 2 (inserted here), 3}
----if this is used on an already sorted table, the table will remain sorted and not need re-sorting
----(you can sort beforehand if you don't know)
----return the table for possible chaining
----@param t table
----@param v any
----@param less nil|fun(v1: any, v2: any): boolean
+--insert to the first position before the first larger element in the table
+-- ({1, 2, 2, 3}, 2) -> {1, 2, 2, 2 (inserted here), 3}
+--if this is used on an already sorted table, the table will remain sorted and not need re-sorting
+--(you can sort beforehand if you don't know)
+--return the table for possible chaining
 function tablex.insert_sorted(t, v, less)
 	less = less or default_less
 	local low = 1
@@ -154,10 +120,8 @@ function tablex.insert_sorted(t, v, less)
 	return t
 end
 
----find the index in a sequential table that a resides at
----or nil if nothing was found
----@param t table
----@param a any
+--find the index in a sequential table that a resides at
+--or nil if nothing was found
 function tablex.index_of(t, a)
 	if a == nil then return nil end
 	for i, b in ipairs(t) do
@@ -168,10 +132,8 @@ function tablex.index_of(t, a)
 	return nil
 end
 
----find the key in a keyed table that a resides at
----or nil if nothing was found
----@param t table
----@param a any
+--find the key in a keyed table that a resides at
+--or nil if nothing was found
 function tablex.key_of(t, a)
 	if a == nil then return nil end
 	for k, v in pairs(t) do
@@ -182,10 +144,8 @@ function tablex.key_of(t, a)
 	return nil
 end
 
----remove the first instance of value from a table (linear search)
----returns true if the value was removed, else false
----@param t table
----@param a any
+--remove the first instance of value from a table (linear search)
+--returns true if the value was removed, else false
 function tablex.remove_value(t, a)
 	local i = tablex.index_of(t, a)
 	if i then
@@ -195,10 +155,8 @@ function tablex.remove_value(t, a)
 	return false
 end
 
----add a value to a table if it doesn't already exist (linear search)
----returns true if the value was added, else false
----@param t table
----@param a any
+--add a value to a table if it doesn't already exist (linear search)
+--returns true if the value was added, else false
 function tablex.add_value(t, a)
 	local i = tablex.index_of(t, a)
 	if not i then
@@ -208,13 +166,11 @@ function tablex.add_value(t, a)
 	return false
 end
 
----get the next element in a sequential table
----wraps around such that the next element to the last in sequence is the first
----exists because builtin next may not behave as expected for mixed array/hash tables
----if the element passed is not present or is nil, will also get the first element
----but this should not be used to iterate the whole table; just use ipairs for that
----@param t table
----@param v any
+--get the next element in a sequential table
+--	wraps around such that the next element to the last in sequence is the first
+--	exists because builtin next may not behave as expected for mixed array/hash tables
+--	if the element passed is not present or is nil, will also get the first element
+--		but this should not be used to iterate the whole table; just use ipairs for that
 function tablex.next_element(t, v)
 	local i = tablex.index_of(t, v)
 	--not present? just get the front of the table
@@ -226,8 +182,6 @@ function tablex.next_element(t, v)
 	return t[i]
 end
 
----@param t table
----@param v any
 function tablex.previous_element(t, v)
 	local i = tablex.index_of(t, v)
 	--not present? just get the front of the table
@@ -255,9 +209,7 @@ local function _random(min, max, r)
 		or _global_random(min, max)
 end
 
----pick a random index from a table (or nil if it's empty)
----@param t table
----@param r table?
+--pick a random value from a table (or nil if it's empty)
 function tablex.random_index(t, r)
 	if #t == 0 then
 		return 0
@@ -265,9 +217,7 @@ function tablex.random_index(t, r)
 	return _random(1, #t, r)
 end
 
----pick a random value from a table (or nil if it's empty)
----@param t table
----@param r table?
+--pick a random value from a table (or nil if it's empty)
 function tablex.pick_random(t, r)
 	if #t == 0 then
 		return nil
@@ -275,9 +225,7 @@ function tablex.pick_random(t, r)
 	return t[tablex.random_index(t, r)]
 end
 
----take a random value from a table (or nil if it's empty)
----@param t table
----@param r table?
+--take a random value from a table (or nil if it's empty)
 function tablex.take_random(t, r)
 	if #t == 0 then
 		return nil
@@ -285,13 +233,10 @@ function tablex.take_random(t, r)
 	return table.remove(t, tablex.random_index(t, r))
 end
 
----return a random value from table t based on weights w provided (or nil empty)
----w should be the same length as t
----todo:
----provide normalisation outside of this function, require normalised weights
----@param t table
----@param w table<number>
----@param r table?
+--return a random value from table t based on weights w provided (or nil empty)
+--	w should be the same length as t
+-- todo:
+--	provide normalisation outside of this function, require normalised weights
 function tablex.pick_weighted_random(t, w, r)
 	if #t == 0 then
 		return nil
@@ -315,9 +260,7 @@ function tablex.pick_weighted_random(t, w, r)
 	return tablex.back(t)
 end
 
----shuffle the order of a table
----@param t table
----@param r table?
+--shuffle the order of a table
 function tablex.shuffle(t, r)
 	for i = 1, #t do
 		local j = _random(i, #t, r)
@@ -326,8 +269,7 @@ function tablex.shuffle(t, r)
 	return t
 end
 
----reverse the order of a table
----@param t table
+--reverse the order of a table
 function tablex.reverse(t)
 	for i = 1, #t / 2 do
 		local j = #t - i + 1
@@ -336,9 +278,7 @@ function tablex.reverse(t)
 	return t
 end
 
----trim a table to a certain maximum length
----@param t table
----@param l number
+--trim a table to a certain maximum length
 function tablex.trim(t, l)
 	while #t > l do
 		table.remove(t)
@@ -346,10 +286,9 @@ function tablex.trim(t, l)
 	return t
 end
 
----collect all keys of a table into a sequential table
----(useful if you need to iterate non-changing keys often and want an nyi tradeoff;
----this call will be slow but then following iterations can use ipairs)
----@param t table
+--collect all keys of a table into a sequential table
+--(useful if you need to iterate non-changing keys often and want an nyi tradeoff;
+--	this call will be slow but then following iterations can use ipairs)
 function tablex.keys(t)
 	local r = {}
 	for k, v in pairs(t) do
@@ -358,9 +297,8 @@ function tablex.keys(t)
 	return r
 end
 
----collect all values of a keyed table into a sequential table
----(shallow copy if it's already sequential)
----@param t table
+--collect all values of a keyed table into a sequential table
+--(shallow copy if it's already sequential)
 function tablex.values(t)
 	local r = {}
 	for k, v in pairs(t) do
@@ -369,12 +307,10 @@ function tablex.values(t)
 	return r
 end
 
----collect all values over a range into a new sequential table
----useful where a range may have been modified to contain nils
----range can be a number, where it is used as a numeric limit (ie [1-range])
----range can be a table, where the sequential values are used as keys
----@param t table
----@param range number|table<number>
+--collect all values over a range into a new sequential table
+--useful where a range may have been modified to contain nils
+--	range can be a number, where it is used as a numeric limit (ie [1-range])
+--	range can be a table, where the sequential values are used as keys
 function tablex.compact(t, range)
 	local r = {}
 	if type(range) == "table" then
@@ -395,11 +331,10 @@ function tablex.compact(t, range)
 		error("tablex.compact - range must be a number or table", 2)
 	end
 	return r
+
 end
 
----append sequence t2 into t1, modifying t1
----@param t1 table
----@param t2 table
+--append sequence t2 into t1, modifying t1
 function tablex.append_inplace(t1, t2, ...)
 	for i, v in ipairs(t2) do
 		table.insert(t1, v)
@@ -410,19 +345,15 @@ function tablex.append_inplace(t1, t2, ...)
 	return t1
 end
 
----return a new sequence with the elements of both t1 and t2
----@param t1 table
----@param ... any
+--return a new sequence with the elements of both t1 and t2
 function tablex.append(t1, ...)
 	local r = {}
 	tablex.append_inplace(r, t1, ...)
 	return r
 end
 
----return a copy of a sequence with all duplicates removed
----causes a little "extra" gc churn of one table to track the duplicates internally
----@param t table
----@return table
+--return a copy of a sequence with all duplicates removed
+--	causes a little "extra" gc churn of one table to track the duplicates internally
 function tablex.dedupe(t)
 	local seen = {}
 	local r = {}
@@ -441,10 +372,9 @@ if not tablex.clear then
 	--pull in from luajit if possible
 	imported, tablex.clear = pcall(require, "table.clear")
 	if not imported then
-		---remove all values from a table
-		---useful when multiple references are being held
-		---so you cannot just create a new table
-		---@param t table
+		--remove all values from a table
+		--useful when multiple references are being held
+		--so you cannot just create a new table
 		function tablex.clear(t)
 			assert:type(t, "table", "tablex.clear - t", 1)
 			local k = next(t)
@@ -456,9 +386,8 @@ if not tablex.clear then
 	end
 end
 
----Copy a table
----See shallow_overlay to shallow copy into an existing table to avoid garbage.
----@param t table
+-- Copy a table
+--	See shallow_overlay to shallow copy into an existing table to avoid garbage.
 function tablex.shallow_copy(t)
 	assert:type(t, "table", "tablex.shallow_copy - t", 1)
 	local into = {}
@@ -471,8 +400,8 @@ end
 --alias
 tablex.copy = tablex.shallow_copy
 
----implementation for deep copy
----traces stuff that has already been copied, to handle circular references
+--implementation for deep copy
+--traces stuff that has already been copied, to handle circular references
 local function _deep_copy_impl(t, already_copied)
 	local clone = t
 	if type(t) == "table" then
@@ -496,20 +425,18 @@ local function _deep_copy_impl(t, already_copied)
 	return clone
 end
 
----Recursively copy values of a table.
----Retains the same keys as original table -- they're not cloned.
----@param t table
+-- Recursively copy values of a table.
+-- Retains the same keys as original table -- they're not cloned.
 function tablex.deep_copy(t)
 	assert:type(t, "table", "tablex.deep_copy - t", 1)
 	return _deep_copy_impl(t, {})
 end
 
----Overlay tables directly onto one another, merging them together.
----Doesn't merge tables within.
----Takes as many tables as required,
----overlays them in passed order onto the first,
----and returns the first table.
----@param dest table
+-- Overlay tables directly onto one another, merging them together.
+-- Doesn't merge tables within.
+-- Takes as many tables as required,
+-- overlays them in passed order onto the first,
+-- and returns the first table.
 function tablex.shallow_overlay(dest, ...)
 	assert:type(dest, "table", "tablex.shallow_overlay - dest", 1)
 	for i = 1, select("#", ...) do
@@ -524,12 +451,11 @@ end
 
 tablex.overlay = tablex.shallow_overlay
 
----Overlay tables directly onto one another, merging them together into something like a union.
----Also overlays nested tables, but doesn't clone them (so a nested table may be added to dest).
----Takes as many tables as required,
----overlays them in passed order onto the first,
----and returns the first table.
----@param dest table
+-- Overlay tables directly onto one another, merging them together into something like a union.
+-- Also overlays nested tables, but doesn't clone them (so a nested table may be added to dest).
+-- Takes as many tables as required,
+-- overlays them in passed order onto the first,
+-- and returns the first table.
 function tablex.deep_overlay(dest, ...)
 	assert:type(dest, "table", "tablex.deep_overlay - dest", 1)
 	for i = 1, select("#", ...) do
@@ -546,15 +472,14 @@ function tablex.deep_overlay(dest, ...)
 	return dest
 end
 
----collapse the first level of a table into a new table of reduced dimensionality
----will collapse {{1, 2}, 3, {4, 5, 6}} into {1, 2, 3, 4, 5, 6}
----useful when collating multiple result sets, or when you got 2d data when you wanted 1d data.
----in the former case you may just want to append_inplace though :)
----note that non-tabular elements in the base level are preserved,
----but _all_ tables are collapsed; this includes any table-based types (eg a batteries.vec2),
----so they can't exist in the base level
----(... or at least, their non-ipairs members won't survive the collapse)
----@param t table
+--collapse the first level of a table into a new table of reduced dimensionality
+--will collapse {{1, 2}, 3, {4, 5, 6}} into {1, 2, 3, 4, 5, 6}
+--useful when collating multiple result sets, or when you got 2d data when you wanted 1d data.
+--in the former case you may just want to append_inplace though :)
+--note that non-tabular elements in the base level are preserved,
+--	but _all_ tables are collapsed; this includes any table-based types (eg a batteries.vec2),
+--	so they can't exist in the base level
+--	(... or at least, their non-ipairs members won't survive the collapse)
 function tablex.collapse(t)
 	assert:type(t, "table", "tablex.collapse - t", 1)
 	local r = {}
@@ -570,13 +495,11 @@ function tablex.collapse(t)
 	return r
 end
 
----extract values of a table into nested tables of a set length
----extract({1, 2, 3, 4}, 2) -> {{1, 2}, {3, 4}}
----useful for working with "inlined" data in a more structured way
----can use collapse (or functional.stitch) to reverse the process once you're done if needed
----todo: support an ordered list of keys passed and extract them to names
----@param t table
----@param n number
+--extract values of a table into nested tables of a set length
+--	extract({1, 2, 3, 4}, 2) -> {{1, 2}, {3, 4}}
+--	useful for working with "inlined" data in a more structured way
+--	can use collapse (or functional.stitch) to reverse the process once you're done if needed
+--	todo: support an ordered list of keys passed and extract them to names
 function tablex.extract(t, n)
 	assert:type(t, "table", "tablex.extract - t", 1)
 	assert:type(n, "number", "tablex.extract - n", 1)
@@ -590,10 +513,8 @@ function tablex.extract(t, n)
 	return r
 end
 
----check if two tables have equal contents at the first level
----slow, as it needs two loops
----@param a table
----@param b table
+--check if two tables have equal contents at the first level
+--slow, as it needs two loops
 function tablex.shallow_equal(a, b)
 	if a == b then return true end
 	for k, v in pairs(a) do
@@ -611,10 +532,8 @@ function tablex.shallow_equal(a, b)
 	return true
 end
 
----check if two tables have equal contents all the way down
----slow, as it needs two potentially recursive loops
----@param a table
----@param b table
+--check if two tables have equal contents all the way down
+--slow, as it needs two potentially recursive loops
 function tablex.deep_equal(a, b)
 	if a == b then return true end
 	--not equal on type
@@ -643,48 +562,40 @@ end
 --alias
 tablex.flatten = tablex.collapse
 
----faster unpacking for known-length tables up to 8
----gets around nyi in luajit
----note: you can use a larger unpack than you need as the rest
----can be discarded, but it "feels dirty" :)
----@param t table
+--faster unpacking for known-length tables up to 8
+--gets around nyi in luajit
+--note: you can use a larger unpack than you need as the rest
+--		can be discarded, but it "feels dirty" :)
+
 function tablex.unpack2(t)
 	return t[1], t[2]
 end
 
----@param t table
 function tablex.unpack3(t)
 	return t[1], t[2], t[3]
 end
 
----@param t table
 function tablex.unpack4(t)
 	return t[1], t[2], t[3], t[4]
 end
 
----@param t table
 function tablex.unpack5(t)
 	return t[1], t[2], t[3], t[4], t[5]
 end
 
----@param t table
 function tablex.unpack6(t)
 	return t[1], t[2], t[3], t[4], t[5], t[6]
 end
 
----@param t table
 function tablex.unpack7(t)
 	return t[1], t[2], t[3], t[4], t[5], t[6], t[7]
 end
 
----@param t table
 function tablex.unpack8(t)
 	return t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8]
 end
 
----internal: reverse iterator function
----@param t table
----@param i number
+--internal: reverse iterator function
 local function _ripairs_iter(t, i)
 	i = i - 1
 	local v = t[i]
@@ -693,19 +604,16 @@ local function _ripairs_iter(t, i)
 	end
 end
 
----iterator that works like ipairs, but in reverse order, with indices from #t to 1
----similar to ipairs, it will only consider sequential until the first nil value in the table.
----@param t table
+--iterator that works like ipairs, but in reverse order, with indices from #t to 1
+--similar to ipairs, it will only consider sequential until the first nil value in the table.
 function tablex.ripairs(t)
 	return _ripairs_iter, t, #t + 1
 end
 
----works like pairs, but returns sorted table
----generates a fair bit of garbage but very nice for more stable output
----less function gets keys the of the table as its argument; if you want to sort on the values they map to then
----you'll likely need a closure
----@param t table
----@param less nil|fun(v1: any, v2:any): boolean
+--works like pairs, but returns sorted table
+--	generates a fair bit of garbage but very nice for more stable output
+--	less function gets keys the of the table as its argument; if you want to sort on the values they map to then
+--		you'll likely need a closure
 function tablex.spairs(t, less)
 	less = less or default_less
 	--gather the keys
@@ -721,5 +629,6 @@ function tablex.spairs(t, less)
 		end
 	end
 end
+
 
 return tablex

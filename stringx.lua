@@ -6,15 +6,11 @@ local path = (...):gsub("stringx", "")
 local assert = require(path .. "assert")
 local pretty = require(path .. "pretty")
 
----@class StringX: string
 local stringx = setmetatable({}, {
-	__index = string --[[@ as StringX]]
+	__index = string
 })
 
----split a string on a delimiter into an ordered table
----@param self StringX
----@param delim string?
----@param limit number?
+--split a string on a delimiter into an ordered table
 function stringx.split(self, delim, limit)
 	delim = delim or ""
 	limit = (limit ~= nil and limit) or math.huge
@@ -76,7 +72,7 @@ function stringx.split(self, delim, limit)
 	--collect substrings
 	i = 1
 	for si, j in ipairs(res) do
-		res[si] = self:sub(i, j - 1)
+		res[si] = self:sub(i, j-1)
 		i = j + delim_length
 	end
 	--add the final section
@@ -87,7 +83,7 @@ end
 
 stringx.pretty = pretty.string
 
----(generate a map of whitespace byte values)
+--(generate a map of whitespace byte values)
 local _whitespace_bytes = {}
 do
 	local _whitespace = " \t\n\r"
@@ -96,11 +92,11 @@ do
 	end
 end
 
----trim all whitespace off the head and tail of a string
----specifically trims space, tab, newline, and carriage return characters
----ignores form feeds, vertical tabs, and backspaces
----only generates one string of garbage in the case there's actually space to trim
----@param s string
+--trim all whitespace off the head and tail of a string
+--	specifically trims space, tab, newline, and carriage return characters
+--	ignores form feeds, vertical tabs, and backspaces
+--
+--	only generates one string of garbage in the case there's actually space to trim
 function stringx.trim(s)
 	--cache
 	local len = s:len()
@@ -137,8 +133,7 @@ function stringx.trim(s)
 	return s:sub(head, tail)
 end
 
----trim the start of a string
----@param s string
+--trim the start of a string
 function stringx.ltrim(s)
 	local head = 1
 	for i = 1, #s do
@@ -153,8 +148,7 @@ function stringx.ltrim(s)
 	return s:sub(head)
 end
 
----trim the end of a string
----@param s string
+--trim the end of a string
 function stringx.rtrim(s)
 	local tail = #s
 
@@ -172,8 +166,6 @@ function stringx.rtrim(s)
 	return s:sub(1, tail)
 end
 
----@param s string
----@param keep_trailing_empty boolean
 function stringx.deindent(s, keep_trailing_empty)
 	--detect windows or unix newlines
 	local windows_newlines = s:find("\r\n", nil, true)
@@ -231,20 +223,16 @@ end
 --alias
 stringx.dedent = stringx.deindent
 
----apply a template to a string
----supports $template style values, given as a table or function
----ie ("hello $name"):format({name = "tom"}) == "hello tom"
----@param s string|number
----@param sub string|number|table|function
+--apply a template to a string
+--supports $template style values, given as a table or function
+-- ie ("hello $name"):format({name = "tom"}) == "hello tom"
 function stringx.apply_template(s, sub)
 	local r = s:gsub("%$([%w_]+)", sub)
 	return r
 end
 
----check if a given string contains another
----(without garbage)
----@param haystack string
----@param needle string
+--check if a given string contains another
+--(without garbage)
 function stringx.contains(haystack, needle)
 	for i = 1, #haystack - #needle + 1 do
 		local found = true
@@ -261,11 +249,9 @@ function stringx.contains(haystack, needle)
 	return false
 end
 
----check if a given string starts with another
----(without garbage)
----Using loops is actually faster than string.find!
----@param s string
----@param prefix string
+--check if a given string starts with another
+--(without garbage)
+--Using loops is actually faster than string.find!
 function stringx.starts_with(s, prefix)
 	for i = 1, #prefix do
 		if s:byte(i) ~= prefix:byte(i) then
@@ -275,10 +261,8 @@ function stringx.starts_with(s, prefix)
 	return true
 end
 
----check if a given string ends with another
----(without garbage)
----@param s string
----@param suffix string
+--check if a given string ends with another
+--(without garbage)
 function stringx.ends_with(s, suffix)
 	local len = #s
 	local suffix_len = #suffix
@@ -290,11 +274,9 @@ function stringx.ends_with(s, suffix)
 	return true
 end
 
----split elements by delimiter and trim the results, discarding empties
----useful for hand-entered "permissive" data
----"a,b,  c, " -> {"a", "b", "c"}
----@param s string|table
----@param delim string
+--split elements by delimiter and trim the results, discarding empties
+--useful for hand-entered "permissive" data
+--	"a,b,  c, " -> {"a", "b", "c"}
 function stringx.split_and_trim(s, delim)
 	s = stringx.split(s, delim)
 	for i = #s, 1, -1 do
@@ -308,14 +290,13 @@ function stringx.split_and_trim(s, delim)
 	return s
 end
 
----titlizes a string
----"quick brown fox" becomes "Quick Brown Fox"
----@param s string
+--titlizes a string
+--"quick brown fox" becomes "Quick Brown Fox"
 function stringx.title_case(s)
-	s = s:gsub("%s%l", string.upper)
-	s = s:gsub("^%l", string.upper)
+    s = s:gsub("%s%l", string.upper)
+    s = s:gsub("^%l", string.upper)
 
-	return s
+    return s
 end
 
 return stringx

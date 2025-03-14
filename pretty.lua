@@ -21,46 +21,31 @@
 ]]
 
 local path = (...):gsub("pretty", "")
----@type TableX
-local table = require(path .. "tablex") --shadow global table module
+local table = require(path.."tablex") --shadow global table module
 
----@class Pretty
 local pretty = {}
 
----@class PrettyConfig
----@field indent boolean
----@field depth number
----@field per_line number
-
----@type PrettyConfig
 pretty.default_config = {
 	indent = true,
 	depth = math.huge,
 	per_line = 1,
 }
 
----indentation to use when `indent = true` is provided
+--indentation to use when `indent = true` is provided
 pretty.default_indent = "\t"
 
----pretty-print something directly
----@param input any
----@param config PrettyConfig
+--pretty-print something directly
 function pretty.print(input, config)
 	print(pretty.string(input, config))
 end
 
----pretty-format something into a string
----@param input any
----@param config PrettyConfig
+--pretty-format something into a string
 function pretty.string(input, config)
 	return pretty._process(input, config)
 end
 
----internal
----actual processing part
----@param input? any
----@param config? PrettyConfig
----@param processing_state table?
+--internal
+--actual processing part
 function pretty._process(input, config, processing_state)
 	--if the input is not a table, or it has a tostring metamethod
 	--then we can just use tostring directly
@@ -91,8 +76,7 @@ function pretty._process(input, config, processing_state)
 
 	--init or collect processing state
 	processing_state = processing_state or {
-		---@type table<any>
-		circular_references = { i = 1 },
+		circular_references = {i = 1},
 		depth = 0,
 	}
 
@@ -103,7 +87,6 @@ function pretty._process(input, config, processing_state)
 	end
 
 	local circular_references = processing_state.circular_references
-	---@type table
 	local ref = circular_references[input]
 	if ref then
 		if not ref.string then
@@ -115,12 +98,10 @@ function pretty._process(input, config, processing_state)
 	ref = {}
 	circular_references[input] = ref
 
-	---@param v any
-	---@return string
 	local function internal_value(v)
 		v = pretty._process(v, config, processing_state)
 		if indent ~= "" then
-			v = v:gsub(newline, newline .. indent)
+			v = v:gsub(newline, newline..indent)
 		end
 		return v
 	end
@@ -185,13 +166,13 @@ function pretty._process(input, config, processing_state)
 	circular_references[input] = nil
 
 	local multiline = #chunks > 1
-	local separator = (indent == "" or not multiline) and ", " or ",\n" .. indent
+	local separator = (indent == "" or not multiline) and ", " or ",\n"..indent
 
-	local prelude = ref.string and (string.format(" <referenced as %s> ", ref.string)) or ""
+	local prelude = ref.string and (string.format(" <referenced as %s> ",ref.string)) or ""
 	if multiline then
 		return "{" .. prelude .. newline ..
 			indent .. table.concat(chunks, separator) .. newline ..
-			"}"
+		"}"
 	end
 	return "{" .. prelude .. table.concat(chunks, separator) .. "}"
 end

@@ -3,7 +3,6 @@ local function require_relative(p)
 	return require(table.concat({ path, p }, "."))
 end
 
----A collection of helpful code to get your project off the ground faster
 ---@class Batteries
 ---@field class Class
 ---@field assert Assert
@@ -27,8 +26,9 @@ end
 ---@field measure Measure
 ---@field make_pooled fun(class: Class, limit: number): Class
 ---@field pathfind fun(args: PathFindArgs): boolean|table
----@field export fun(self): Batteries
+---@field identifier Identifier
 
+---A collection of helpful code to get your project off the ground faster
 local _batteries = {
 	class = require_relative("class"),
 	assert = require_relative("assert"),
@@ -52,6 +52,7 @@ local _batteries = {
 	measure = require_relative("measure"),
 	make_pooled = require_relative("make_pooled"),
 	pathfind = require_relative("pathfind"),
+	identifier = require_relative("identifier")
 }
 
 ---@type Batteries

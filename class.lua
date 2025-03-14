@@ -181,4 +181,4 @@ local function Class(config)
 	return c
 end
 
-return class
+return Class

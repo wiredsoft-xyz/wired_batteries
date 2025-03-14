@@ -55,5 +55,4 @@ local _batteries = {
 	identifier = require_relative("identifier")
 }
 
----@type Batteries
-return _batteries
+return _batteries --[[@as Batteries]]

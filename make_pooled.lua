@@ -1,7 +1,10 @@
 ---@diagnostic disable: inject-field
 
 ---@class PooledClass
----@field pooled fun(self, ...)
+---@field pooled fun(self, ...): any
+---@field release fun(self, ...): any
+---@field flush_pool fun()
+---@field drain_pool fun()
 
 ---add pooling functionality to a class
 ---adds a handful of class and instance methods to do with pooling

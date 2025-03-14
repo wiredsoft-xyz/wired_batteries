@@ -11,6 +11,7 @@ local math = require(path .. "mathx") --shadow global math module
 local make_pooled = require(path .. "make_pooled")
 
 ---@class Vec2 : PooledClass
+---@overload fun(x: number?, y: number?): Vec2
 local vec2 = Class({
 	name = "vec2",
 })
@@ -82,6 +83,7 @@ end
 make_pooled(vec2 --[[@as Class]], 128)
 
 ---get a pooled copy of an existing vector
+---@return Vec2
 function vec2:pooled_copy()
 	return vec2:pooled(self)
 end

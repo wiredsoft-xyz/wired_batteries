@@ -145,10 +145,10 @@ end
 
 --collide 2 line segments
 local _line_line_search_tab = {
-	{vec2(), 1},
-	{vec2(), 1},
-	{vec2(), -1},
-	{vec2(), -1},
+	{ vec2(), 1 },
+	{ vec2(), 1 },
+	{ vec2(), -1 },
+	{ vec2(), -1 },
 }
 function intersect.line_line_collide(a_start, a_end, a_rad, b_start, b_end, b_rad, into)
 	--segment directions from start points
@@ -184,14 +184,14 @@ function intersect.line_line_collide(a_start, a_end, a_rad, b_start, b_end, b_ra
 
 	--(c to lua translation of paul bourke's
 	-- line intersection algorithm)
-	local dx1 =  (a_end.x   - a_start.x)
-	local dx2 =  (b_end.x   - b_start.x)
-	local dy1 =  (a_end.y   - a_start.y)
-	local dy2 =  (b_end.y   - b_start.y)
-	local dxab = (a_start.x - b_start.x)
-	local dyab = (a_start.y - b_start.y)
+	local dx1    = (a_end.x - a_start.x)
+	local dx2    = (b_end.x - b_start.x)
+	local dy1    = (a_end.y - a_start.y)
+	local dy2    = (b_end.y - b_start.y)
+	local dxab   = (a_start.x - b_start.x)
+	local dyab   = (a_start.y - b_start.y)
 
-	local denom  = dy2 * dx1  - dx2 * dy1
+	local denom  = dy2 * dx1 - dx2 * dy1
 	local numera = dx2 * dyab - dy2 * dxab
 	local numerb = dx1 * dyab - dy1 * dxab
 
@@ -269,6 +269,7 @@ function intersect.line_line_collide(a_start, a_end, a_rad, b_start, b_end, b_ra
 			end
 		end
 	end
+	if best == nil then error("best is nil") end
 
 	--fix direction
 	into:set(best[1])

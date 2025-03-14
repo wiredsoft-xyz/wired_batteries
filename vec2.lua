@@ -3,11 +3,11 @@
 ]]
 
 local path = (...):gsub("vec2", "")
-local class = require(path .. "class")
+local Class = require(path .. "class")
 local math = require(path .. "mathx") --shadow global math module
 local make_pooled = require(path .. "make_pooled")
 
-local vec2 = class({
+local vec2 = Class({
 	name = "vec2",
 })
 
@@ -61,7 +61,7 @@ end
 
 --pack when a sequence is needed
 function vec2:pack()
-	return {self:unpack()}
+	return { self:unpack() }
 end
 
 --shared pooled storage
@@ -410,7 +410,7 @@ end
 --	<0 when p right of line
 function vec2.winding_side(a, b, p)
 	return (b.x - a.x) * (p.y - a.y)
-		 - (p.x - a.x) * (b.y - a.y)
+		- (p.x - a.x) * (b.y - a.y)
 end
 
 --return whether a is nearer to v than b
@@ -497,6 +497,7 @@ function vec2:major_inplace()
 	end
 	return self
 end
+
 -- mask out max component, with preference to keep x
 function vec2:minor_inplace()
 	if self.x < self.y then
@@ -575,33 +576,33 @@ end
 --i do encourage using the longer versions above as it makes code easier
 --to understand when you come back, but i also appreciate wanting short code
 for _, v in ipairs({
-	{"sset", "scalar_set"},
-	{"sadd", "scalar_add"},
-	{"ssub", "scalar_sub"},
-	{"smul", "scalar_mul"},
-	{"sdiv", "scalar_div"},
-	{"vset", "vector_set"},
-	{"vadd", "vector_add"},
-	{"vsub", "vector_sub"},
-	{"vmul", "vector_mul"},
-	{"vdiv", "vector_div"},
+	{ "sset",      "scalar_set" },
+	{ "sadd",      "scalar_add" },
+	{ "ssub",      "scalar_sub" },
+	{ "smul",      "scalar_mul" },
+	{ "sdiv",      "scalar_div" },
+	{ "vset",      "vector_set" },
+	{ "vadd",      "vector_add" },
+	{ "vsub",      "vector_sub" },
+	{ "vmul",      "vector_mul" },
+	{ "vdiv",      "vector_div" },
 	--(no plain addi etc, imo it's worth differentiating vaddi vs saddi)
-	{"fma", "fused_multiply_add"},
-	{"vproj", "vector_projection"},
-	{"vrej", "vector_rejection"},
+	{ "fma",       "fused_multiply_add" },
+	{ "vproj",     "vector_projection" },
+	{ "vrej",      "vector_rejection" },
 	--just for the _inplace -> i shorthand, mostly for backwards compatibility
-	{"min", "min"},
-	{"max", "max"},
-	{"clamp", "clamp"},
-	{"abs", "abs"},
-	{"sign", "sign"},
-	{"floor", "floor"},
-	{"ceil", "ceil"},
-	{"round", "round"},
-	{"lerp", "lerp"},
-	{"rotate", "rotate"},
-	{"normalise", "normalise"},
-	{"normalize", "normalize"},
+	{ "min",       "min" },
+	{ "max",       "max" },
+	{ "clamp",     "clamp" },
+	{ "abs",       "abs" },
+	{ "sign",      "sign" },
+	{ "floor",     "floor" },
+	{ "ceil",      "ceil" },
+	{ "round",     "round" },
+	{ "lerp",      "lerp" },
+	{ "rotate",    "rotate" },
+	{ "normalise", "normalise" },
+	{ "normalize", "normalize" },
 }) do
 	local shorthand, original = v[1], v[2]
 	if vec2[shorthand] == nil then

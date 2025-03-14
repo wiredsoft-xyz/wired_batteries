@@ -7,12 +7,12 @@
 
 local path = (...):gsub("set", "")
 ---@type Class
-local class = require(path .. "class")
+local Class = require(path .. "class")
 ---@type TableX
 local table = require(path .. "tablex") --shadow global table module
 
 ---@class Set
-local set = class({
+local set = Class({
 	name = "set",
 })
 

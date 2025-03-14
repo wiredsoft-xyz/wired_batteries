@@ -4,12 +4,12 @@
 
 --import vec2 if not defined globally
 local path = (...):gsub("vec3", "")
-local class = require(path .. "class")
+local Class = require(path .. "class")
 local vec2 = require(path .. "vec2")
 local math = require(path .. "mathx") --shadow global math module
 local make_pooled = require(path .. "make_pooled")
 
-local vec3 = class({
+local vec3 = Class({
 	name = "vec3",
 })
 
@@ -57,7 +57,7 @@ end
 
 --pack when a sequence is needed
 function vec3:pack()
-	return {self:unpack()}
+	return { self:unpack() }
 end
 
 --handle pooling
@@ -386,7 +386,6 @@ vec3.rot180 = vec3.inverse --alias
 function vec3:rotate_around(swizzle, angle, pivot)
 	return self:copy():rotate_aroundi(swizzle, angle, pivot)
 end
-
 
 -----------------------------------------------------------
 -- per-component clamping ops

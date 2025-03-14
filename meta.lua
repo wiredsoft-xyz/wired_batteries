@@ -16,10 +16,10 @@
 ---@field pubsub PubSub
 ---@field state_machine StateMachine
 ---@field async Async
----@field manual_gc ManualGC
+---@field manual_gc fun(time_budget: number, memory_ceiling: number, disable_otherwise: boolean)
 ---@field colour Colour
 ---@field pretty Pretty
 ---@field measure Measure
----@field make_pooled MakePooled
----@field pathfind PathFind
+---@field make_pooled fun(class: Class, limit: number): Class
+---@field pathfind fun(args: PathFindArgs): boolean|table
 ---@field export fun(self): Batteries

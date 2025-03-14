@@ -68,7 +68,7 @@ end
 ---build a new class
 ---@param config ClassConfig
 ---@return Class
-local function class(config)
+local function Class(config)
 	local class_id = next_class_id()
 
 	config = config or {}

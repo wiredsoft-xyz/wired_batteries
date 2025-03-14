@@ -24,9 +24,9 @@
 ]]
 
 local path = (...):gsub("state_machine", "")
-local class = require(path .. "class")
+local Class = require(path .. "class")
 
-local state_machine = class({
+local state_machine = Class({
 	name = "state_machine",
 })
 

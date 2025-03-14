@@ -12,7 +12,7 @@ local assert = require(path .. "assert")
 local sort = require(path .. "sort")
 local spairs_sort = sort.stable_sort
 
----@class TableX: table
+---@class TableX: tablelib
 local tablex = setmetatable({}, {
 	--apply prototype to module if it isn't the global table
 	--so it works "as if" it was the global table api
@@ -22,7 +22,6 @@ local tablex = setmetatable({}, {
 
 --alias
 tablex.join = table.concat
-tablex.insert = table.insert
 
 ---return the front element of a table
 ---@generic T

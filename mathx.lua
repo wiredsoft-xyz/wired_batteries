@@ -1,5 +1,5 @@
 ---extra mathematical functions
----@class MathX
+---@class MathX : mathlib
 local mathx = setmetatable({}, {
 	__index = math --[[@as MathX]]
 })

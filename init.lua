@@ -17,7 +17,7 @@ end
 ---@field vec3 Vec3
 ---@field intersect Intersect
 ---@field timer Timer
----@field pubsub PubSub
+---@field signal_manager SignalManager
 ---@field state_machine StateMachine
 ---@field async Async
 ---@field manual_gc fun(time_budget: number, memory_ceiling: number, disable_otherwise: boolean)
@@ -48,7 +48,7 @@ local _batteries = {
 	vec3 = require_relative("vec3"),
 	intersect = require_relative("intersect"),
 	timer = require_relative("timer"),
-	pubsub = require_relative("pubsub"),
+	signal_manager = require_relative("signal_manager"),
 	state_machine = require_relative("state_machine"),
 	async = require_relative("async"),
 	manual_gc = require_relative("manual_gc"),
